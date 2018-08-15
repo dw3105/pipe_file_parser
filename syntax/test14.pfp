@@ -1,0 +1,9 @@
+
+// filters and transforms will be executed in order of
+// occurrence in expression
+file( 'abc.txt' )               // Execution order:
+.include( contains( '9' ) )     // #1
+.split( ',' )                   // #2
+.columns( 1, 2, 3 )             // #3
+.merge( '-' )                   // #4
+.exclude( contains( '0-0' ) )   // #5

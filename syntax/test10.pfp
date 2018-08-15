@@ -1,0 +1,2 @@
+avail_phs = file( '${exportedprodPHOnlyhier}.phOnly' ).toLowerCase
+file( '${delPHList}.tmp' ).include( inDictionary( 0, avail_phs, true ) ) -> file( '${delPHList}' )

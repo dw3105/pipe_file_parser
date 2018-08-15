@@ -1,0 +1,9 @@
+
+// log is set to stdout
+log( stdout, all )
+
+// parser statement output is also set to stdout
+file( 'test.txt' ) -> stdout // equals to file( 'test.txt' )
+
+// in this case log settings will be overridden to:
+// log( stderr, error )

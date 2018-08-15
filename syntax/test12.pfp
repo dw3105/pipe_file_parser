@@ -1,0 +1,25 @@
+// class com.test.MyFirstFilter must extend 
+// blog.javamagic.pfp.filter.ImportedFilter
+// and it must be on classpath
+
+// filter name by default will be MyFirstFilter
+filter com.test.MyFirstFilter
+
+// explicit definition of filter name as SecondFilter
+SecondFilter = filter com.test.MySecondFilter
+
+// class com.test.MyFirstTransform must extend 
+// blog.javamagic.pfp.transform.ImportedTransform
+// and it must be on classpath
+
+// filter name by default will be MyFirstTransform
+transform com.test.MyFirstTransform
+
+// explicit definition of transform name as SecondTransform
+SecondTransform = transform com.test.MySecondTransform
+
+file( 'test.txt' )
+.include( MyFirstFilter( 0 ) ) // imported filters may
+.exclude( MySecondFilter )     // or may not use parameters
+.MyFirstTransform              // same with imported transforms
+.MySecondTransform( 0, 'abc', false )

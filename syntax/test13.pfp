@@ -1,0 +1,7 @@
+
+// input will be taken from file 'abc.txt'
+// only lines which contain 'a' and don't contain 'b' will be 
+// printed to stdout
+file( 'abc.txt' )
+.include( contains( 'a' ) )
+.exclude( contains( 'b' ) )

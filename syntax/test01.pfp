@@ -1,0 +1,1 @@
+files( '/domvol01/oracle/LandMark_AP/ap2apx/out//theorplanap2plm_*06.csv.*' ).exclude( contains( 'PlaceHolder ID' ) ).unique -> file( '/domvol01/oracle/LandMark_AP/from_rpas/theorplanap2plm_06.csv.20180813_110726.tmp' )

@@ -1,8 +1,6 @@
-# Compiled class file
-*.class
 
-# Log file
-*.log
+### Java ###
+*.class
 
 # BlueJ files
 *.ctxt
@@ -12,12 +10,46 @@
 
 # Package Files #
 *.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+# *.war
+# *.ear
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+
+### Gradle ###
+.gradle
+/build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
+
+# End of https://www.gitignore.io/api/java,gradle
+build/
+.settings/
+.persistence
+.classpath
+.project
+test_configs/*.xml.json
+test_configs/*.xml.parsed.json
+src/main/java/*.java
+src/main/java/blog/javamagic/pfp/antlr/generated/*
+syntax/PFPSyntax*
+syntax/log*
+
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+#Mercurial data
+.hg
+/.hgignore
