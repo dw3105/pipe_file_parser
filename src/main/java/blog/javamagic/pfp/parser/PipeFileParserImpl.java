@@ -71,6 +71,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 	private final Map<StringArrayKey, Boolean> fUniqueLines;
 	
 	private boolean fUnique = false;
+	private boolean fStopped = false;
 
 	public PipeFileParserImpl( final Source source ) {
 		fSource = source;
@@ -122,13 +123,18 @@ final class PipeFileParserImpl implements PipeFileParser {
 		final AtomicInteger lines_parsed = new AtomicInteger( 0 );
 		fSource.forEachLine(
 				( line ) -> {
-					Logger.log(
-							PFP.LOG_LEVEL_DEBUG,
-							() -> "Processed line: %1$s",
-							() -> new Object[] { Arrays.toString( line ) }
-					);
-					if ( processLine( line, consumer ) ) {
-						lines_parsed.incrementAndGet();
+					if ( fStopped ) {
+						fSource.stop();
+					}
+					else {
+						Logger.log(
+								PFP.LOG_LEVEL_DEBUG,
+								() -> "Processed line: %1$s",
+								() -> new Object[] { Arrays.toString( line ) }
+						);
+						if ( processLine( line, consumer ) ) {
+							lines_parsed.incrementAndGet();
+						}
 					}
 				} );
 		Logger.log(
@@ -378,6 +384,11 @@ final class PipeFileParserImpl implements PipeFileParser {
 	@Override
 	public final void output() {
 		output( "" );
+	}
+
+	@Override
+	public void stop() {
+		fStopped = true;
 	}
 
 }

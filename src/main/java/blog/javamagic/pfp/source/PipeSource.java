@@ -8,7 +8,7 @@ import blog.javamagic.pfp.PFP;
 import blog.javamagic.pfp.logger.Logger;
 import blog.javamagic.pfp.parser.PipeFileParser;
 
-final class PipeSource implements Source {
+final class PipeSource extends AbstractSource {
 
 	private final PipeFileParser fParser;
 
@@ -24,22 +24,29 @@ final class PipeSource implements Source {
 				() -> null
 		);
 		final AtomicInteger lines_received = new AtomicInteger( 0 );
-		fParser.parse(
-				( line ) -> {
-					Logger.log(
-							PFP.LOG_LEVEL_ALL,
-							() -> "Line received from pipe:\t%1$s",
-							() -> new Object[] { Arrays.toString( line ) }
-					);
-					lines_received.incrementAndGet();
-					consumer.accept( line );
+		try {
+			fParser.parse( ( line ) -> {
+				if ( stopped() ) {
+					fParser.stop();
+					return;
 				}
-		);
-		Logger.log(
-				PFP.LOG_LEVEL_INFO,
-				() -> "Completed receiving lines from pipe, lines received: %1$d",
-				() -> new Object[] { lines_received.get() }
-		);
+				Logger
+						.log(
+								PFP.LOG_LEVEL_ALL,
+								() -> "Line received from pipe:\t%1$s",
+								() -> new Object[] { Arrays.toString( line ) }
+						);
+				lines_received.incrementAndGet();
+				consumer.accept( line );
+			} );
+		}
+		finally {
+			Logger.log(
+					PFP.LOG_LEVEL_INFO,
+					() -> "Completed receiving lines from pipe, lines received: %1$d",
+					() -> new Object[] { lines_received.get() }
+			);
+		}
 	}
 
 }

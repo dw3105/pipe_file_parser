@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import blog.javamagic.pfp.PFP;
 import blog.javamagic.pfp.logger.Logger;
 
-final class StdinSource implements Source {
+final class StdinSource extends AbstractSource {
 
 	@Override
 	public final void forEachLine( final Consumer<String[]> consumer ) {
@@ -27,7 +27,7 @@ final class StdinSource implements Source {
 		) {
 			while ( true ) {
 				final String line = reader.readLine();
-				if ( line == null ) {
+				if ( ( line == null ) || stopped() ) {
 					break;
 				}
 				Logger.log(

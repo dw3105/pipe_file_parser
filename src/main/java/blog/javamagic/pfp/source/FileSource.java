@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import blog.javamagic.pfp.PFP;
 import blog.javamagic.pfp.logger.Logger;
 
-final class FileSource implements Source {
+final class FileSource extends AbstractSource {
 
 	private final String fFilename;
 
@@ -35,7 +35,7 @@ final class FileSource implements Source {
 		) {
 			while ( true ) {
 				final String str = reader.readLine();
-				if ( str == null ) {
+				if ( ( str == null ) || stopped() ) {
 					break;
 				}
 				Logger.log(

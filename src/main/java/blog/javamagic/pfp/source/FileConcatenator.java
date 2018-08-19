@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import blog.javamagic.pfp.file.WildcardMatcher;
 import blog.javamagic.pfp.parser.PipeFileParser;
 
-final class FileConcatenator implements Source {
+final class FileConcatenator extends AbstractSource {
 
 	private final String[] fFileMasks;
 
@@ -29,7 +29,14 @@ final class FileConcatenator implements Source {
 			WildcardMatcher.match( mask, files_list::add );
 		}
 		files_list.forEach(
-				( file ) -> new FileSource( file ).forEachLine( consumer )
+				( file ) -> new FileSource( file ).forEachLine(
+						( line ) -> {
+							if ( stopped() ) {
+								return;
+							}
+							consumer.accept( line );
+						}
+				)
 		);
 	}
 

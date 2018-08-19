@@ -26,4 +26,6 @@ public interface PipeFileParser {
 	
 	public void countLines();
 	
+	public void stop();
+	
 }

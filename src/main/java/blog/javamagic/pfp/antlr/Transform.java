@@ -167,4 +167,10 @@ public final class Transform extends AbstractContainer {
 		fName = name;
 	}
 
+	public final void addColumnsRange( final int fromCol, final int toCol ) {
+		for ( int col = fromCol; col <= toCol; ++col ) {
+			addColumn( col );
+		}
+	}
+
 }

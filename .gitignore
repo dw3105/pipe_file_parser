@@ -35,6 +35,7 @@ gradle-app.setting
 
 # End of https://www.gitignore.io/api/java,gradle
 build/
+bin/
 .settings/
 .persistence
 .classpath
@@ -53,3 +54,4 @@ hs_err_pid*
 #Mercurial data
 .hg
 /.hgignore
+/.hgtags

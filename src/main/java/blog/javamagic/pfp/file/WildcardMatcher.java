@@ -77,7 +77,7 @@ public final class WildcardMatcher {
 					break;
 				}
 				else {
-					if ( i > 0 ) {
+					if ( new_base.length() > 0 ) {
 						new_base += "/";
 					}
 					new_base += part;
@@ -131,7 +131,11 @@ public final class WildcardMatcher {
 			}
 		}
 		else {
-			return Paths.get( "." ).toAbsolutePath().normalize().toString();
+			return Paths.get( "." )
+					.toAbsolutePath()
+					.normalize()
+					.toString()
+					.replaceAll( "\\\\", "/" );
 		}
 	}
 

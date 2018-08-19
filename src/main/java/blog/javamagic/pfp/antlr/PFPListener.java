@@ -1,5 +1,10 @@
 package blog.javamagic.pfp.antlr;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -20,6 +25,7 @@ import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_parametersContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_parserContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_predicateContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_programContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_rangeContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_transformContext;
 
 public final class PFPListener extends PFPSyntaxBaseListener {
@@ -140,6 +146,9 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 		final Log log = ctx.result;
 		fCurrentContainer = log.parent();
 		final Pfp_log_outputContext output = ctx.pfp_log_output();
+		if ( output.pfp_short_file() != null ) {
+			log.setFileOutput( output.pfp_short_file().STRING().getText() );
+		}
 		if ( output.FILE() != null ) {
 			log.setFileOutput( output.STRING().getText() );
 		}
@@ -183,6 +192,10 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 	public void exitPfp_output( Pfp_outputContext ctx ) {
 		final Output output = ctx.result;
 		fCurrentContainer = output.parent();
+		if ( ctx.pfp_short_file() != null ) {
+			output.setType( Output.Type.file );
+			output.setFilename( ctx.pfp_short_file().STRING().getText() );
+		}
 		if ( ctx.FILE() != null ) {
 			output.setType( Output.Type.file );
 			output.setFilename( ctx.STRING( 0 ).getText() );
@@ -243,6 +256,10 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 	public void exitPfp_input( Pfp_inputContext ctx ) {
 		final Input input = ctx.result;
 		fCurrentContainer = input.parent();
+		if ( ctx.pfp_short_file() != null ) {
+			input.setType( Input.Type.files );
+			input.addFilemask( ctx.pfp_short_file().STRING().getText() );
+		}
 		if ( ctx.FILE() != null ) {
 			input.setType( Input.Type.file );
 			input.setFilename( ctx.STRING( 0 ).getText() );
@@ -268,6 +285,20 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 		if ( ctx.PARSER() != null ) {
 			input.setType( Input.Type.parser );
 			input.setParser( ctx.pfp_parser().result );
+		}
+		if ( ctx.HEAD() != null ) {
+			input.setType( Input.Type.head );
+			input.setParser( ctx.pfp_parser().result );
+			if ( ctx.INT() != null ) {
+				input.setLinesCount( Integer.parseInt( ctx.INT().getText() ) );
+			}
+		}
+		if ( ctx.TAIL() != null ) {
+			input.setType( Input.Type.tail );
+			input.setParser( ctx.pfp_parser().result );
+			if ( ctx.INT() != null ) {
+				input.setLinesCount( Integer.parseInt( ctx.INT().getText() ) );
+			}
 		}
 	}
 
@@ -349,9 +380,7 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 		}
 		if ( ctx.COLUMNS() != null ) {
 			transform.setType( Transform.Type.columns );
-			for ( TerminalNode col : ctx.INT() ) {
-				transform.addColumn( Integer.parseInt( col.getText() ) );
-			}
+			extractColumns( ctx, transform );
 		}
 		if ( ctx.LAST_MATCHING_FILE() != null ) {
 			transform.setType( Transform.Type.lastMatchingFile );
@@ -395,6 +424,59 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 			transform.setName( ctx.VAR().getText() );
 			if ( ctx.pfp_parameters() != null ) {
 				transform.setParameters( ctx.pfp_parameters().result );
+			}
+		}
+	}
+	
+	private final static class ColumnsParameter {
+
+		private final int index;
+		private final TerminalNode col;
+		private final Pfp_rangeContext range;
+
+		public ColumnsParameter( final TerminalNode col ) {
+			index = col.getSymbol().getTokenIndex();
+			this.col = col;
+			this.range = null;
+		}
+
+		public ColumnsParameter( final Pfp_rangeContext range ) {
+			index = range.INT( 0 ).getSymbol().getTokenIndex();
+			this.col = null;
+			this.range = range;
+		}
+		
+	}
+
+	private final void extractColumns(
+			final Pfp_transformContext ctx,
+			final Transform transform
+	) {
+		final List<ColumnsParameter> params = new ArrayList<>();
+		for ( final TerminalNode col : ctx.INT() ) {
+			params.add( new ColumnsParameter( col ) );
+		}
+		for ( final Pfp_rangeContext range : ctx.pfp_range() ) {
+			params.add( new ColumnsParameter( range ) );
+		}
+		Collections.sort( params, new Comparator<ColumnsParameter>() {
+
+			@Override
+			public int compare( ColumnsParameter p1, ColumnsParameter p2 ) {
+				return Integer.compare( p1.index, p2.index );
+			}
+		} );
+		for ( final ColumnsParameter parameter : params ) {
+			if ( parameter.col != null ) {
+				transform.addColumn(
+						Integer.parseInt( parameter.col.getText() )
+				);
+			}
+			else {
+				transform.addColumnsRange(
+						Integer.parseInt( parameter.range.INT( 0 ).getText() ),
+						Integer.parseInt( parameter.range.INT( 1 ).getText() )
+				);
 			}
 		}
 	}

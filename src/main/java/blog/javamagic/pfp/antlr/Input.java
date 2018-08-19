@@ -13,13 +13,16 @@ public final class Input extends AbstractContainer {
 		files,
 		fileNames,
 		stdin,
-		parser
+		parser,
+		head,
+		tail
 	}
 
 	private Type fType;
 	private String fFilename;
 	private final List<String> fMasks;
 	private Parser fParser;
+	private int fLinesCount = 10;
 	
 	public Input() {
 		fMasks = new ArrayList<>();
@@ -64,6 +67,12 @@ public final class Input extends AbstractContainer {
 		case stdin:
 			source = Sources.stdin();
 			break;
+		case head:
+			source = Sources.head( fParser.pipeFileParser(), fLinesCount );
+			break;
+		case tail:
+			source = Sources.tail( fParser.pipeFileParser(), fLinesCount );
+			break;
 		default:
 			throw new Error( "Invalid type - " + fType );
 		}
@@ -72,6 +81,10 @@ public final class Input extends AbstractContainer {
 
 	private final String[] fileMasks() {
 		return fMasks.toArray( new String[fMasks.size()] );
+	}
+
+	public final void setLinesCount( final int linesCount ) {
+		fLinesCount = linesCount;
 	}
 
 }

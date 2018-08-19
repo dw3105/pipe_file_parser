@@ -1,0 +1,1 @@
+log( 'log.log', info ) tail( 'prod.csv.dat' ).split( ',' ).columns( 0, 4-9, 19 ).merge( ',' ) -> 'tail.out'

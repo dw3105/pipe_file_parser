@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import blog.javamagic.pfp.file.WildcardMatcher;
 
-final class FilenamesSource implements Source {
+final class FilenamesSource extends AbstractSource {
 
 	private final String[] fFileMasks;
 
@@ -22,7 +22,12 @@ final class FilenamesSource implements Source {
 			WildcardMatcher.match( mask, files_list::add );
 		}
 		files_list.forEach(
-				( file ) -> consumer.accept( new String[] { file } )
+				( file ) -> {
+					if ( stopped() ) {
+						return;
+					}
+					consumer.accept( new String[] { file } );
+				}
 		);
 	}
 

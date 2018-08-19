@@ -28,4 +28,18 @@ public final class Sources {
 		return new StdinSource();
 	}
 
+	public final static Source head(
+			final PipeFileParser parser,
+			final int linesCount
+	) {
+		return new HeadSource( parser, linesCount );
+	}
+
+	public final static Source tail(
+			final PipeFileParser parser,
+			final int linesCount
+	) {
+		return new TailSource( parser, linesCount );
+	}
+
 }
