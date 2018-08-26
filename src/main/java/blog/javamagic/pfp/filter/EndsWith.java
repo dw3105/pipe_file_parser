@@ -1,33 +1,16 @@
 package blog.javamagic.pfp.filter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import blog.javamagic.pfp.variable.Variables;
 
-final class Contains implements LineFilter {
+final class EndsWith implements LineFilter {
 
 	private final List<String> fStringParameters;
 	private final List<String> fVariableParameters;
 	private final int fColumn;
 
-	public Contains(
-			final String substring,
-			final String variable,
-			final int column
-	) {
-		fStringParameters = new ArrayList<>();
-		if ( substring != null ) {
-			fStringParameters.add( substring );
-		}
-		fVariableParameters = new ArrayList<>();
-		if ( variable != null ) {
-			fVariableParameters.add( variable );
-		}
-		fColumn = column;
-	}
-
-	public Contains(
+	public EndsWith(
 			final List<String> stringParameters,
 			final List<String> variableParameters,
 			final int column
@@ -38,7 +21,7 @@ final class Contains implements LineFilter {
 	}
 
 	@Override
-	public final boolean f( final String[] line ) {
+	public boolean f( String[] line ) {
 		for ( final String str : fStringParameters ) {
 			if ( testSubstring( line, str ) ) {
 				return true;
@@ -61,14 +44,14 @@ final class Contains implements LineFilter {
 	) {
 		if ( fColumn == -1 ) {
 			for ( final String part : line ) {
-				if ( part.contains( substring ) ) {
+				if ( part.endsWith( substring ) ) {
 					return true;
 				}
 			}
 			return false;
 		}
 		else {
-			return line[fColumn].contains( substring );
+			return line[fColumn].endsWith( substring );
 		}
 	}
 

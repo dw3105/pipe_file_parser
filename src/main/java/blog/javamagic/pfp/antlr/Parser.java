@@ -30,6 +30,10 @@ public final class Parser extends AbstractContainer {
 						final Transform transform = (Transform) child;
 						transform.appendTo( parser );
 					}
+					else if ( child instanceof VarDefinitions ) {
+						final VarDefinitions var_defs = (VarDefinitions) child;
+						parser.varDefinitions( var_defs );
+					}
 				}
 		);
 		if ( fUnique ) {

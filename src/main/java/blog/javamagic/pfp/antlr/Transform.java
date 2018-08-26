@@ -11,6 +11,23 @@ import blog.javamagic.pfp.transform.LineTransforms;
 
 public final class Transform extends AbstractContainer {
 
+	public static final class TemplateParameter {
+
+		public final Integer column;
+		public final String variable;
+
+		public TemplateParameter( final int column ) {
+			this.column = column;
+			this.variable = null;
+		}
+
+		public TemplateParameter( final String variable ) {
+			this.column = null;
+			this.variable = variable;
+		}
+
+	}
+
 	public enum Type {
 		basename,
 		columns,
@@ -20,7 +37,9 @@ public final class Transform extends AbstractContainer {
 		split,
 		template,
 		toLowerCase,
-		custom
+		custom,
+		if_,
+		writeToLog
 	}
 
 	private Type fType;
@@ -30,19 +49,16 @@ public final class Transform extends AbstractContainer {
 	private String fTemplate;
 	private String fName;
 	private Parameters fParameters = new Parameters();
-	
-	private final List<Integer> fColumns;
-	
-	public Transform() {
-		fColumns = new ArrayList<>();
-	}
+	private String fLogTemplate;
+	private int fLogLevel;
+	private If fIf;
+
+	private final List<Integer> fColumns = new ArrayList<>();
+	private final List<TemplateParameter> fTemplateParameters =
+			new ArrayList<>();
 
 	public final void setType( final Type type ) {
 		fType = type;
-	}
-
-	public final void addColumn( final int column ) {
-		fColumns.add( column );
 	}
 
 	public final void setTargetColumn( final int column ) {
@@ -66,8 +82,20 @@ public final class Transform extends AbstractContainer {
 	}
 
 	public final void appendTo( final PipeFileParser parser ) {
+		parser.transform( transform() );
+	}
+
+	private final Function<String[], String[]> transform() {
 		final Function<String[], String[]> transform;
 		switch ( fType ) {
+		case if_:
+			transform =
+					LineTransforms.if_(
+							fIf.predicate(),
+							fIf.mainBranch(),
+							fIf.alternativeBranch()
+					)::t;
+			break;
 		case basename:
 			transform = LineTransforms.basename( fTargetColumn )::t;
 			break;
@@ -103,16 +131,24 @@ public final class Transform extends AbstractContainer {
 					LineTransforms.template(
 							fTargetColumn,
 							fTemplate,
-							columns()
+							fTemplateParameters
 					)::t;
 			break;
 		case toLowerCase:
 			transform = LineTransforms.toLowerCase( fTargetColumn )::t;
 			break;
+		case writeToLog:
+			transform =
+					LineTransforms.writeToLog(
+							fLogLevel,
+							fLogTemplate,
+							fTemplateParameters
+					)::t;
+			break;
 		default:
 			throw new Error( "Invalid type - " + fType );
 		}
-		parser.transform( transform );
+		return transform;
 	}
 
 	private final LineTransform replaceTransform() {
@@ -171,6 +207,34 @@ public final class Transform extends AbstractContainer {
 		for ( int col = fromCol; col <= toCol; ++col ) {
 			addColumn( col );
 		}
+	}
+
+	public final void setIf( final If if_ ) {
+		fIf = if_;
+	}
+
+	public final String[] processLine( final String[] line ) {
+		return transform().apply( line );
+	}
+
+	public final void addTemplateParameter( final int column ) {
+		fTemplateParameters.add( new TemplateParameter( column ) );
+	}
+
+	public final void addTemplateParameter( final String variable ) {
+		fTemplateParameters.add( new TemplateParameter( variable ) );
+	}
+
+	public final void addColumn( final int column ) {
+		fColumns.add( column );
+	}
+
+	public final void setLogTemplate( final String template ) {
+		fLogTemplate = PFPSyntax.string( template );
+	}
+
+	public final void setLogLevel( final int logLevel ) {
+		fLogLevel = logLevel;
 	}
 
 }

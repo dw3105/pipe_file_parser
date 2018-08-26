@@ -54,12 +54,16 @@ public final class Logger {
 			"%1$s\t%2$tY-%2$tm-%2$td %2$tH:%2$tM:%2$tS.%2$tL\t\t%3$s";
 
 	private static String fLogTemplate = DEFAULT_LOG_TEMPLATE;
+	private static boolean fErrorCaught = false;
 
 	public final static void log(
 			final int logLevel,
 			final Supplier<String> templateSource,
 			final Supplier<Object[]> paramsSource
 	) {
+		if ( logLevel == PFP.LOG_LEVEL_ERROR ) {
+			setErrorCaught( true );
+		}
 		if ( PFP.logEnabled( logLevel ) ) {
 			final String template;
 			try {
@@ -130,6 +134,9 @@ public final class Logger {
 			final String message,
 			final String logTemplate
 	) {
+		if ( type == MsgType.error ) {
+			setErrorCaught( true );
+		}
 		try {
 			PFP.logOutput().println(
 					String.format(
@@ -171,6 +178,14 @@ public final class Logger {
 
 	public final static LogOutput stderr() {
 		return new StderrLog();
+	}
+
+	public final static boolean errorCaught() {
+		return fErrorCaught;
+	}
+
+	public final static void setErrorCaught( final boolean value ) {
+		fErrorCaught = value;
 	}
 
 }

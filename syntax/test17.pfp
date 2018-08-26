@@ -1,0 +1,3 @@
+head(
+	'${exportedprodhier}'.+contains( ',${PLVL},' ).-contains( ',OTHER_OTHER,' ), 1
+).split( ',' ).columns( 2-39 ).merge( ',' )

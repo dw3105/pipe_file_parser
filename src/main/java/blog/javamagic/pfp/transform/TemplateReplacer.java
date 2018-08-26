@@ -1,12 +1,17 @@
 package blog.javamagic.pfp.transform;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import blog.javamagic.pfp.antlr.Transform.TemplateParameter;
+import blog.javamagic.pfp.variable.Variables;
 
 final class TemplateReplacer implements LineTransform {
 
 	private final int fTargetColumn;
 	private final String fTemplate;
-	private final int[] fParamColumns;
+	private final List<TemplateParameter> fParameters;
 
 	public TemplateReplacer(
 			final int targetColumn,
@@ -15,7 +20,20 @@ final class TemplateReplacer implements LineTransform {
 	) {
 		fTargetColumn = targetColumn;
 		fTemplate = parseTemplate( template );
-		fParamColumns = paramColumns;
+		fParameters = new ArrayList<>();
+		for ( final int column : paramColumns ) {
+			fParameters.add( new TemplateParameter( column ) );
+		}
+	}
+
+	public TemplateReplacer(
+			final int targetColumn,
+			final String template,
+			final List<TemplateParameter> parameters
+	) {
+		fTargetColumn = targetColumn;
+		fTemplate = parseTemplate( template );
+		fParameters = parameters;
 	}
 
 	private final static String parseTemplate( final String template ) {
@@ -100,9 +118,16 @@ final class TemplateReplacer implements LineTransform {
 	@Override
 	public final String[] t( final String[] line ) {
 		final String[] new_line = Arrays.copyOf( line, line.length );
-		final Object[] params = new Object[fParamColumns.length];
-		for ( int i = 0; i < fParamColumns.length; ++i ) {
-			params[i] = line[fParamColumns[i]];
+		final int params_count = fParameters.size();
+		final Object[] params = new Object[params_count];
+		for ( int i = 0; i < params_count; ++i ) {
+			final TemplateParameter param = fParameters.get( i );
+			if ( param.column != null ) {
+				params[i] = line[param.column];
+			}
+			else {
+				params[i] = Variables.getString( param.variable );
+			}
 		}
 		new_line[fTargetColumn] = String.format( fTemplate, params );
 		return new_line;

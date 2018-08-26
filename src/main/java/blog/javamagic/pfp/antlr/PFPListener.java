@@ -10,10 +10,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import blog.javamagic.pfp.PFP;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxBaseListener;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_begins_withContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_class_nameContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_commandContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_containsContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_dictionaryContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_ends_withContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_filterContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_ifContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_if_branchContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_import_filterContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_import_transformContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_inputContext;
@@ -26,7 +31,15 @@ import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_parserContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_predicateContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_programContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_rangeContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_stringContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_string_compContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_string_or_varContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_templateContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_template_paramContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_transformContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_var_defContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_var_defsContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_write_to_logContext;
 
 public final class PFPListener extends PFPSyntaxBaseListener {
 
@@ -300,6 +313,10 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 				input.setLinesCount( Integer.parseInt( ctx.INT().getText() ) );
 			}
 		}
+		if ( ctx.VAR() != null ) {
+			input.setType( Input.Type.dictionary );
+			input.setVariable( ctx.VAR().getText() );
+		}
 	}
 
 	@Override
@@ -320,9 +337,86 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 	public void exitPfp_predicate( Pfp_predicateContext ctx ) {
 		final Predicate predicate = ctx.result;
 		fCurrentContainer = predicate.parent();
-		if ( ctx.CONTAINS() != null ) {
+		if ( ctx.pfp_predicate() != null ) {
+			ctx.result = ctx.pfp_predicate().result;
+		}
+		if ( ctx.pfp_string_comp() != null ) {
+			predicate.setType( Predicate.Type.string_comparison );
+			final Pfp_string_compContext comp = ctx.pfp_string_comp();
+			final Pfp_string_or_varContext left = comp.pfp_string_or_var( 0 );
+			if ( left.STRING() != null ) {
+				predicate.setLeftString( left.STRING().getText() );
+			}
+			if ( left.VAR() != null ) {
+				predicate.setLeftVariable( left.VAR().getText() );
+			}
+			final Pfp_string_or_varContext right = comp.pfp_string_or_var( 1 );
+			if ( right.STRING() != null ) {
+				predicate.setRightString( right.STRING().getText() );
+			}
+			if ( right.VAR() != null ) {
+				predicate.setRightVariable( right.VAR().getText() );
+			}
+			if ( comp.EQ() != null ) {
+				predicate.setComparison( Predicate.Comparison.equals );
+			}
+			if ( comp.NE() != null ) {
+				predicate.setComparison( Predicate.Comparison.not_equals );
+			}
+		}
+		if ( ctx.pfp_contains() != null ) {
 			predicate.setType( Predicate.Type.contains );
-			predicate.setString( ctx.STRING().getText() );
+			final Pfp_containsContext contains = ctx.pfp_contains();
+			for (
+					final Pfp_string_or_varContext str_var
+					: contains.pfp_string_or_var()
+			) {			
+				if ( str_var.STRING() != null ) {
+					predicate.addStringParam( str_var.STRING().getText() );
+				}
+				if ( str_var.VAR() != null ) {
+					predicate.addVariableParam( str_var.VAR().getText() );
+				}
+			}
+			if ( contains.INT() != null ) {
+				predicate.setColumn( Integer.parseInt( contains.INT().getText() ) );
+			}
+		}
+		if ( ctx.pfp_begins_with() != null ) {
+			predicate.setType( Predicate.Type.beginsWith );
+			final Pfp_begins_withContext begins_with = ctx.pfp_begins_with();
+			for (
+					final Pfp_string_or_varContext str_var
+					: begins_with.pfp_string_or_var()
+			) {			
+				if ( str_var.STRING() != null ) {
+					predicate.addStringParam( str_var.STRING().getText() );
+				}
+				if ( str_var.VAR() != null ) {
+					predicate.addVariableParam( str_var.VAR().getText() );
+				}
+			}
+			if ( begins_with.INT() != null ) {
+				predicate.setColumn( Integer.parseInt( begins_with.INT().getText() ) );
+			}
+		}
+		if ( ctx.pfp_ends_with() != null ) {
+			predicate.setType( Predicate.Type.endsWith );
+			final Pfp_ends_withContext ends_with = ctx.pfp_ends_with();
+			for (
+					final Pfp_string_or_varContext str_var
+					: ends_with.pfp_string_or_var()
+			) {			
+				if ( str_var.STRING() != null ) {
+					predicate.addStringParam( str_var.STRING().getText() );
+				}
+				if ( str_var.VAR() != null ) {
+					predicate.addVariableParam( str_var.VAR().getText() );
+				}
+			}
+			if ( ends_with.INT() != null ) {
+				predicate.setColumn( Integer.parseInt( ends_with.INT().getText() ) );
+			}
 		}
 		if ( ctx.IN_DICTIONARY() != null ) {
 			predicate.setType( Predicate.Type.inDictionary );
@@ -333,6 +427,13 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 			predicate.setName( ctx.VAR().getText() );
 			if ( ctx.pfp_parameters() != null ) {
 				predicate.setParameters( ctx.pfp_parameters().result );
+			}
+		}
+		if ( ctx.LOOKUP() != null ) {
+			predicate.setType( Predicate.Type.lookup );
+			predicate.setDictionary( ctx.VAR().getText() );
+			if ( ctx.INT() != null ) {
+				predicate.setColumn( Integer.parseInt( ctx.INT().getText() ) );
 			}
 		}
 	}
@@ -372,6 +473,10 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 	public void exitPfp_transform( Pfp_transformContext ctx ) {
 		final Transform transform = ctx.result;
 		fCurrentContainer = transform.parent();
+		if ( ctx.pfp_if() != null ) {
+			transform.setType( Transform.Type.if_ );
+			transform.setIf( ctx.pfp_if().result );
+		}
 		if ( ctx.BASENAME() != null ) {
 			transform.setType( Transform.Type.basename );
 			if ( ctx.INT().size() > 0 ) {
@@ -409,8 +514,15 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 			transform.setType( Transform.Type.template );
 			transform.setTargetColumn( Integer.parseInt( ctx.INT( 0 ).getText() ) );
 			transform.setTemplate( ctx.STRING().getText() );
-			for ( int i = 1; i < ctx.INT().size(); ++i ) {
-				transform.addColumn( Integer.parseInt( ctx.INT( i ).getText() ) );
+			for ( final Pfp_template_paramContext param : ctx.pfp_template_param() ) {
+				if ( param.INT() != null ) {
+					transform.addTemplateParameter(
+							Integer.parseInt( param.INT().getText() )
+					);
+				}
+				if ( param.VAR() != null ) {
+					transform.addTemplateParameter( param.VAR().getText() );
+				}
 			}
 		}
 		if ( ctx.TO_LOWER_CASE() != null ) {
@@ -424,6 +536,39 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 			transform.setName( ctx.VAR().getText() );
 			if ( ctx.pfp_parameters() != null ) {
 				transform.setParameters( ctx.pfp_parameters().result );
+			}
+		}
+		if ( ctx.pfp_write_to_log() != null ) {
+			transform.setType( Transform.Type.writeToLog );
+			final Pfp_write_to_logContext log = ctx.pfp_write_to_log();
+			transform.setLogTemplate( log.STRING().getText() );
+			int log_level = PFP.LOG_LEVEL_ALL;
+			//ALL|DEBUG|INFO|WARNING|ERROR
+			if ( log.ALL() != null ) {
+				log_level = PFP.LOG_LEVEL_ALL;
+			}
+			if ( log.DEBUG() != null ) {
+				log_level = PFP.LOG_LEVEL_DEBUG;
+			}
+			if ( log.INFO() != null ) {
+				log_level = PFP.LOG_LEVEL_INFO;
+			}
+			if ( log.WARNING() != null ) {
+				log_level = PFP.LOG_LEVEL_WARNING;
+			}
+			if ( log.ERROR() != null ) {
+				log_level = PFP.LOG_LEVEL_ERROR;
+			}
+			transform.setLogLevel( log_level );
+			for ( final Pfp_template_paramContext param : log.pfp_template_param() ) {
+				if ( param.INT() != null ) {
+					transform.addTemplateParameter(
+							Integer.parseInt( param.INT().getText() )
+					);
+				}
+				if ( param.VAR() != null ) {
+					transform.addTemplateParameter( param.VAR().getText() );
+				}
 			}
 		}
 	}
@@ -479,6 +624,103 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 				);
 			}
 		}
+	}
+
+	@Override
+	public void enterPfp_var_defs( Pfp_var_defsContext ctx ) {
+		ctx.result = new VarDefinitions();
+		fCurrentContainer.add( ctx.result );
+		fCurrentContainer = ctx.result;
+	}
+
+	@Override
+	public void exitPfp_var_defs( Pfp_var_defsContext ctx ) {
+		final VarDefinitions var_defs = ctx.result;
+		fCurrentContainer = var_defs.parent();
+		for ( final Pfp_var_defContext var_def : ctx.pfp_var_def() ) {
+			final String name = var_def.VAR().getText();
+			if ( var_def.INT() != null ) {
+				var_defs.addVar(
+						name,
+						Integer.parseInt( var_def.INT().getText() )
+				);
+			}
+			if ( var_def.pfp_string() != null ) {
+				final Pfp_stringContext str = var_def.pfp_string();
+				if ( str.pfp_template() != null ) {
+					final Pfp_templateContext tmpl = str.pfp_template();
+					final String tmpl_str = tmpl.STRING().getText();
+					final List<VarDefinitions.Parameter> parameters =
+							new ArrayList<>();
+					for (
+							final Pfp_string_or_varContext param
+							: tmpl.pfp_string_or_var()
+					) {
+						VarDefinitions.Parameter parameter = null;
+						if ( param.STRING() != null ) {
+							parameter =
+									new VarDefinitions.Parameter(
+											param.STRING().getText(),
+											null
+									);
+						}
+						if ( param.VAR() != null ) {
+							parameter =
+									new VarDefinitions.Parameter(
+											null,
+											param.VAR().getText()
+									);
+						}
+						parameters.add( parameter );
+					}
+					var_defs.addTemplateVar( name, tmpl_str, parameters );
+				}
+				if ( str.STRING() != null ) {
+					var_defs.addVar( name, str.STRING().getText() );
+				}
+				if ( str.INT() != null ) {
+					var_defs.addColumnVar(
+							name,
+							Integer.parseInt( str.INT().getText() )
+					);
+				}
+			}
+			if ( var_def.pfp_parser() != null ) {
+				var_defs.addVar( name, var_def.pfp_parser().result );
+			}
+		}
+	}
+
+	@Override
+	public void enterPfp_if( Pfp_ifContext ctx ) {
+		ctx.result = new If();
+		fCurrentContainer.add( ctx.result );
+		fCurrentContainer = ctx.result;
+	}
+
+	@Override
+	public void exitPfp_if( Pfp_ifContext ctx ) {
+		final If if_ = ctx.result;
+		fCurrentContainer = if_.parent();
+		if_.setPredicate( ctx.pfp_predicate().result );
+		if_.setMainBranch( ctx.pfp_if_branch( 0 ).result );
+		if ( ctx.pfp_if_branch().size() == 2 ) {
+			if_.setAlternativeBranch( ctx.pfp_if_branch( 1 ).result );
+		}
+	}
+
+	@Override
+	public void enterPfp_if_branch( Pfp_if_branchContext ctx ) {
+		ctx.result = new IfBranch();
+		fCurrentContainer.add( ctx.result );
+		fCurrentContainer = ctx.result;
+	}
+
+	@Override
+	public void exitPfp_if_branch( Pfp_if_branchContext ctx ) {
+		final IfBranch if_branch = ctx.result;
+		fCurrentContainer = if_branch.parent();
+		// TODO Auto-generated method stub
 	}
 
 	@Override

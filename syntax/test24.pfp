@@ -1,0 +1,3 @@
+
+log( stdout, all )
+'prod.exported_06.csv.dat'.( PLVL_CM = ',06_6000_500_10,' ).+contains( PLVL_CM ).+contains( ',OTHER_OTHER,' ) -> '..\prod.tmp'

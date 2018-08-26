@@ -8,7 +8,8 @@ public final class VariablesRegistry {
 	public enum VariableType {
 		dictionary,
 		filter,
-		transform
+		transform,
+		variable
 	}
 	
 	private final static Map<String, VariableType> fRegisteredVariables =
@@ -28,6 +29,10 @@ public final class VariablesRegistry {
 
 	public final static void registerDictionary( final String name ) {
 		fRegisteredVariables.put( name, VariableType.dictionary );
+	}
+
+	public final static void registerVariable( final String name ) {
+		fRegisteredVariables.put( name, VariableType.variable );
 	}
 
 }

@@ -1,8 +1,12 @@
 package blog.javamagic.pfp.transform;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
+import blog.javamagic.pfp.antlr.Transform.TemplateParameter;
+import blog.javamagic.pfp.branch.Branch;
 import blog.javamagic.pfp.dictionary.Dictionary;
 import blog.javamagic.pfp.variable.VariablesRegistry;
 
@@ -43,6 +47,14 @@ public final class LineTransforms {
 			final int[] paramColumns
 	) {
 		return new TemplateReplacer( targetColumn, template, paramColumns );
+	}
+
+	public final static LineTransform template(
+			final int targetColumn,
+			final String template,
+			final List<TemplateParameter> parameters
+	) {
+		return new TemplateReplacer( targetColumn, template, parameters );
 	}
 
 	public final static LineTransform lastMatchingFile(
@@ -103,6 +115,22 @@ public final class LineTransforms {
 
 	public final static LineTransform merge( final String separator ) {
 		return new Merge( separator );
+	}
+
+	public final static LineTransform if_(
+			final Predicate<String[]> predicate,
+			final Branch mainBranch,
+			final Branch alternativeBranch
+	) {
+		return new IfTransform( predicate, mainBranch, alternativeBranch );
+	}
+
+	public final static LineTransform writeToLog(
+			final int logLevel,
+			final String template,
+			final List<TemplateParameter> templateParameters
+	) {
+		return new WriteToLog( logLevel, template, templateParameters );
 	}
 
 }

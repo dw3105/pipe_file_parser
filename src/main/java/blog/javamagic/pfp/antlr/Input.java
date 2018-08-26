@@ -3,6 +3,7 @@ package blog.javamagic.pfp.antlr;
 import java.util.ArrayList;
 import java.util.List;
 
+import blog.javamagic.pfp.dictionary.Dictionaries;
 import blog.javamagic.pfp.source.Source;
 import blog.javamagic.pfp.source.Sources;
 
@@ -15,7 +16,8 @@ public final class Input extends AbstractContainer {
 		stdin,
 		parser,
 		head,
-		tail
+		tail,
+		dictionary
 	}
 
 	private Type fType;
@@ -23,6 +25,7 @@ public final class Input extends AbstractContainer {
 	private final List<String> fMasks;
 	private Parser fParser;
 	private int fLinesCount = 10;
+	private String fVariable;
 	
 	public Input() {
 		fMasks = new ArrayList<>();
@@ -73,6 +76,9 @@ public final class Input extends AbstractContainer {
 		case tail:
 			source = Sources.tail( fParser.pipeFileParser(), fLinesCount );
 			break;
+		case dictionary:
+			source = Dictionaries.get( fVariable );
+			break;
 		default:
 			throw new Error( "Invalid type - " + fType );
 		}
@@ -85,6 +91,10 @@ public final class Input extends AbstractContainer {
 
 	public final void setLinesCount( final int linesCount ) {
 		fLinesCount = linesCount;
+	}
+
+	public final void setVariable( final String variable ) {
+		fVariable = variable;
 	}
 
 }

@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import blog.javamagic.pfp.PFP;
 import blog.javamagic.pfp.file.WildcardMatcher;
+import blog.javamagic.pfp.logger.Logger;
 import blog.javamagic.pfp.parser.PipeFileParser;
 
 final class FileConcatenator extends AbstractSource {
@@ -38,6 +40,13 @@ final class FileConcatenator extends AbstractSource {
 						}
 				)
 		);
+		if ( files_list.isEmpty() ) {
+			Logger.log(
+					PFP.LOG_LEVEL_ERROR,
+					() -> "No files were found matching masks %1$s",
+					() -> new Object[] { Arrays.toString( fFileMasks ) }
+			);
+		}
 	}
 
 }

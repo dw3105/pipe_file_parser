@@ -1,0 +1,1 @@
+'${phid}'.template( 0, 'skup,#0', 0 ) -> '${phFile}'

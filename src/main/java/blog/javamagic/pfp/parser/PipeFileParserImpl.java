@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blog.javamagic.pfp.PFP;
+import blog.javamagic.pfp.antlr.VarDefinitions;
 import blog.javamagic.pfp.logger.Logger;
 import blog.javamagic.pfp.source.Source;
 import blog.javamagic.pfp.source.Sources;
@@ -24,7 +25,8 @@ final class PipeFileParserImpl implements PipeFileParser {
 	private enum ItemType {
 		transform,
 		includeFilter,
-		excludeFilter
+		excludeFilter,
+		varDefinitions
 	}
 
 	private final static class QueueItem {
@@ -67,6 +69,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 	private final Source fSource;
 	private final List<Function<String[], String[]>> fTransforms;
 	private final List<Predicate<String[]>> fFilters;
+	private final List<VarDefinitions> fVarDefinitions;
 	private final List<QueueItem> fQueue;
 	private final Map<StringArrayKey, Boolean> fUniqueLines;
 	
@@ -77,6 +80,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 		fSource = source;
 		fTransforms = new ArrayList<>();
 		fFilters = new ArrayList<>();
+		fVarDefinitions = new ArrayList<>();
 		fQueue = new ArrayList<>();
 		fUniqueLines = new HashMap<>();
 	}
@@ -108,6 +112,14 @@ final class PipeFileParserImpl implements PipeFileParser {
 	}
 
 	@Override
+	public final PipeFileParser varDefinitions( final VarDefinitions varDefs ) {
+		final int num = fVarDefinitions.size();
+		fVarDefinitions.add( varDefs );
+		fQueue.add( new QueueItem( ItemType.varDefinitions, num ) );
+		return this;
+	}
+
+	@Override
 	public final PipeFileParser unique() {
 		fUnique = true;
 		return this;
@@ -128,7 +140,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 					}
 					else {
 						Logger.log(
-								PFP.LOG_LEVEL_DEBUG,
+								PFP.LOG_LEVEL_ALL,
 								() -> "Processed line: %1$s",
 								() -> new Object[] { Arrays.toString( line ) }
 						);
@@ -148,6 +160,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 			final Consumer<String[]> consumer
 	) {
 		try {
+			PFP.setCurrentLine( line );
 			String[] processed_line = line;
 			for ( final QueueItem item : fQueue ) {
 				switch ( item.itemType ) {
@@ -155,7 +168,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 				case excludeFilter:
 					try {
 						Logger.log(
-								PFP.LOG_LEVEL_DEBUG,
+								PFP.LOG_LEVEL_ALL,
 								() -> "Applying filter #%1$d",
 								() -> new Object[] { ( item.num + 1 ) }
 						);
@@ -171,7 +184,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 						if ( !line_passed ) {
 							final String[] current_line = processed_line;
 							Logger.log(
-									PFP.LOG_LEVEL_DEBUG,
+									PFP.LOG_LEVEL_ALL,
 									() -> "Filter #%1$d failed for line %2$s",
 									() -> new Object[] {
 											( item.num + 1 ),
@@ -199,7 +212,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 				case transform:
 					try {
 						Logger.log(
-								PFP.LOG_LEVEL_DEBUG,
+								PFP.LOG_LEVEL_ALL,
 								() -> "Applying transformation #%1$d",
 								() -> new Object[] { ( item.num + 1 ) }
 						);
@@ -208,8 +221,9 @@ final class PipeFileParserImpl implements PipeFileParser {
 						final String[] before = processed_line;
 						processed_line = function.apply( processed_line );
 						final String[] after = processed_line;
+						PFP.setCurrentLine( after );
 						Logger.log(
-								PFP.LOG_LEVEL_DEBUG,
+								PFP.LOG_LEVEL_ALL,
 								() -> "%1$s converted to %2$s",
 								() -> new Object[] {
 										Arrays.toString( before ),
@@ -232,6 +246,27 @@ final class PipeFileParserImpl implements PipeFileParser {
 						return false;
 					}
 					break;
+				case varDefinitions:
+					try {
+						final VarDefinitions var_defs =
+								fVarDefinitions.get( item.num );
+						var_defs.defineVars();
+					}
+					catch ( Throwable e ) {
+						final String[] current_line = processed_line;
+						Logger.log(
+								PFP.LOG_LEVEL_ERROR,
+								() -> "Exception (%3$s) caught in defining "
+										+ "variables block #%1$d for line %2$s",
+								() -> new Object[] {
+										( item.num + 1 ),
+										Arrays.toString( current_line ),
+										e.getMessage()
+								}
+						);
+						return false;
+					}
+					break;
 				default:
 					throw new Error(
 							"Invalid item type: '" + item.itemType + "'"
@@ -243,7 +278,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 				if ( !isUnique( processed_line ) ) {
 					final String[] current_line = processed_line;
 					Logger.log(
-							PFP.LOG_LEVEL_DEBUG,
+							PFP.LOG_LEVEL_ALL,
 							() -> "Line %1$s is not unique",
 							() -> new Object[] { 
 									Arrays.toString( current_line )
@@ -359,7 +394,6 @@ final class PipeFileParserImpl implements PipeFileParser {
 
 	@Override
 	public final void output( final String separator ) {
-		final AtomicInteger counter = new AtomicInteger( 0 );
 		parse(
 				( line ) -> {
 					final int len = line.length;
@@ -371,11 +405,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 							}
 							sb.append( line[i] );
 						}
-						if ( counter.get() > 0 ) {
-							System.out.println();
-						}
-						System.out.print( sb.toString() );
-						counter.incrementAndGet();
+						System.out.println( sb.toString() );
 					}
 				}
 		);
@@ -387,7 +417,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 	}
 
 	@Override
-	public void stop() {
+	public final void stop() {
 		fStopped = true;
 	}
 

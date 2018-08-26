@@ -15,7 +15,7 @@ final class Split implements LineTransform {
 	public final String[] t( final String[] line ) {
 		final List<String> list = new ArrayList<>();
 		for ( String column : line ) {
-			final String[] parts = column.split( fSeparator );
+			final String[] parts = column.split( fSeparator, -1 );
 			for ( String part : parts ) {
 				list.add( part );
 			}

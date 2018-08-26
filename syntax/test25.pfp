@@ -1,0 +1,9 @@
+
+log( 'prod_ph.log', debug )
+plvlphid = 'from_rpas/plvl_phid_06.txt'.split( ',' )
+rollupmaster = 'from_rpas/RollupMaster_06.csv.dat'.split( ',' )
+'from_rpas/phid_06.txt'.(
+		PH = #0,
+		PLVL = plvlphid.+contains( PH ).columns( 1 ),
+		PLVL_ROLLUP = rollupmaster.( ROLLUP_PLVL = #0 ).+( PLVL == ROLLUP_PLVL ).columns( 1-38 ).merge( ',' )
+).template( 0, '#0,#0,#1', 0, PLVL_ROLLUP ) -> 'prod_ph.csv.dat'

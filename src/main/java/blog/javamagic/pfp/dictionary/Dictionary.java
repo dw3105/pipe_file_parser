@@ -1,6 +1,8 @@
 package blog.javamagic.pfp.dictionary;
 
-public interface Dictionary {
+import blog.javamagic.pfp.source.Source;
+
+public interface Dictionary extends Source {
 	
 	String[] line( String id );
 	

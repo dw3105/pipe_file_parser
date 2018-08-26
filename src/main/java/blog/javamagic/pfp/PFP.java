@@ -1,5 +1,7 @@
 package blog.javamagic.pfp;
 
+import java.util.Arrays;
+
 import blog.javamagic.pfp.dictionary.Dictionaries;
 import blog.javamagic.pfp.dictionary.Dictionary;
 import blog.javamagic.pfp.filter.LineFilters;
@@ -23,6 +25,7 @@ public final class PFP {
 	
 	private static int fLogLevel = LOG_LEVEL_WARNING;
 	private static LogOutput fLogOutput = Logger.stdout();
+	private static String[] fCurrentLine = new String[0];
 
 	public final static PipeFileParser fromFile( final String filename ) {
 		return Parsers.create( Sources.fromFile( filename ) );
@@ -102,8 +105,15 @@ public final class PFP {
 		return ( fLogLevel >= minLogLevel );
 	}
 
-	public final static LineFilter contains( String substring ) {
-		return LineFilters.contains( substring );
+	public final static LineFilter contains( final String substring ) {
+		return contains( substring, -1 );
+	}
+
+	public final static LineFilter contains(
+			final String substring,
+			final int column
+	) {
+		return LineFilters.contains( substring, null, column );
 	}
 
 	public final static LineTransform basename( final int column ) {
@@ -225,6 +235,14 @@ public final class PFP {
 			setStderrLogOutput();
 			setLogLevel( PFP.LOG_LEVEL_ERROR );
 		}
+	}
+
+	public final static String[] currentLine() {
+		return Arrays.copyOf( fCurrentLine, fCurrentLine.length );
+	}
+
+	public static void setCurrentLine( final String[] line ) {
+		fCurrentLine = line;
 	}
 
 }

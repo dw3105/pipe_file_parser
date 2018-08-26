@@ -1,0 +1,8 @@
+
+plvlphid = '${plvlphid}'.split( ',' )
+rollupmaster = '${rollupmaster}'.split( ',' )
+'${phid}'.(
+		PHID = #0,
+		PLVL = plvlphid.+contains( PHID ).columns( 1 ),
+		PLVL_ROLLUP = rollupmaster.+contains( '${PLVL}', 0 ).columns( 1-38 ).merge( ',' )
+).template( 0, '#0,#0,#1', PHID, PLVL_ROLLUP ) -> '${prodhierwithph}'

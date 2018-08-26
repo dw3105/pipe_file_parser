@@ -1,29 +1,48 @@
 package blog.javamagic.pfp.antlr;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import blog.javamagic.pfp.dictionary.Dictionaries;
 import blog.javamagic.pfp.dictionary.Dictionary;
-import blog.javamagic.pfp.filter.LineFilters;
 import blog.javamagic.pfp.filter.ImportedFilter;
+import blog.javamagic.pfp.filter.LineFilters;
 
 public final class Predicate extends AbstractContainer {
 
 	public enum Type {
 		contains,
 		inDictionary,
-		custom		
+		custom,
+		string_comparison,
+		lookup,
+		beginsWith,
+		endsWith		
+	}
+	
+	public enum Comparison {
+		equals,
+		not_equals
 	}
 
 	private Type fType;
-	private String fString;
 	private Parameters fParameters = new Parameters();
 	private String fName;
+	private int fColumn = -1;
+	private String fLeftString;
+	private String fLeftVariable;
+	private String fRightString;
+	private String fRightVariable;
+	private Comparison fComparison;
+	private String fDictionary;
+	
+	private final List<String> fStringParameters =
+			new ArrayList<String>();
+	private final List<String> fVariableParameters =
+			new ArrayList<String>();
 
 	public final void setType( final Type type ) {
 		fType = type;
-	}
-
-	public final void setString( final String string ) {
-		fString = PFPSyntax.string( string );
 	}
 
 	public final void setParameters( final Parameters parameters ) {
@@ -37,8 +56,54 @@ public final class Predicate extends AbstractContainer {
 	public final java.util.function.Predicate<String[]> predicate() {
 		final java.util.function.Predicate<String[]> predicate;
 		switch ( fType ) {
+		case string_comparison:
+			switch ( fComparison ) {
+			case equals:
+				predicate = LineFilters.StringEqual(
+						fLeftString,
+						fLeftVariable,
+						fRightString,
+						fRightVariable
+				)::f;
+				break;
+			case not_equals:
+				predicate = LineFilters.StringNotEqual(
+						fLeftString,
+						fLeftVariable,
+						fRightString,
+						fRightVariable
+				)::f;
+				break;
+			default:
+				throw new Error( "Invalid comparison - " + fComparison );
+			}
+			break;
 		case contains:
-			predicate = LineFilters.contains( fString )::f;
+			predicate =
+					LineFilters.contains(
+							fStringParameters,
+							fVariableParameters,
+							fColumn
+					)::f;
+			break;
+		case beginsWith:
+			predicate =
+					LineFilters.beginsWith(
+							fStringParameters,
+							fVariableParameters,
+							fColumn
+					)::f;
+			break;
+		case endsWith:
+			predicate =
+					LineFilters.endsWith(
+							fStringParameters,
+							fVariableParameters,
+							fColumn
+					)::f;
+			break;
+		case lookup:
+			predicate = LineFilters.lookup( fDictionary, fColumn )::f;
 			break;
 		case custom:
 			final ImportedFilter filter = LineFilters.importedFilter( fName );
@@ -95,6 +160,42 @@ public final class Predicate extends AbstractContainer {
 			throw new Error( "Invalid type - " + fType );
 		}
 		return predicate;
+	}
+
+	public final void setColumn( final int column ) {
+		fColumn = column;
+	}
+
+	public final void setLeftString( final String str ) {
+		fLeftString = PFPSyntax.string( str );
+	}
+
+	public final void setLeftVariable( final String name ) {
+		fLeftVariable = name;
+	}
+
+	public final void setRightString( final String str ) {
+		fRightString = PFPSyntax.string( str );
+	}
+
+	public final void setRightVariable( final String name ) {
+		fRightVariable = name;
+	}
+
+	public final void setComparison( final Comparison comp ) {
+		fComparison = comp;
+	}
+
+	public final void setDictionary( final String dictionary ) {
+		fDictionary = dictionary;
+	}
+
+	public final void addStringParam( final String str ) {
+		fStringParameters.add( PFPSyntax.string( str ) );
+	}
+
+	public final void addVariableParam( final String variable ) {
+		fVariableParameters.add( variable );
 	}
 
 }
