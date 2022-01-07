@@ -11,7 +11,7 @@ public final class WildcardMatcher {
 
 	public final static void match(
 			final String mask,
-			final Consumer<String> consumer
+			final Consumer<File> consumer
 	) {
 		final String slashed_mask = mask.trim().replaceAll( "\\\\", "/" );
 		if ( !"".equals( mask ) ) {
@@ -25,15 +25,15 @@ public final class WildcardMatcher {
 	private final static void matchFiles(
 			final String base,
 			final String mask,
-			final Consumer<String> consumer
+			final Consumer<File> consumer
 	) {
 		if ( mask == "" ) {
 			final File base_file = new File( base );
 			if ( base_file.exists() && base_file.isFile() ) {
-				final String normalized = Paths.get( base )
+				final File normalized = Paths.get( base )
 						.toAbsolutePath()
 						.normalize()
-						.toString();
+						.toFile();
 				consumer.accept( normalized );
 			}
 		}

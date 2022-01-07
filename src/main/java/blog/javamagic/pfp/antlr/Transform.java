@@ -39,7 +39,8 @@ public final class Transform extends AbstractContainer {
 		toLowerCase,
 		custom,
 		if_,
-		writeToLog
+		writeToLog,
+		insertColumns
 	}
 
 	private Type fType;
@@ -52,6 +53,7 @@ public final class Transform extends AbstractContainer {
 	private String fLogTemplate;
 	private int fLogLevel;
 	private If fIf;
+	private int fCount = 0;
 
 	private final List<Integer> fColumns = new ArrayList<>();
 	private final List<TemplateParameter> fTemplateParameters =
@@ -74,11 +76,11 @@ public final class Transform extends AbstractContainer {
 	}
 
 	public final void setSeparator( final String separator ) {
-		fSeparator = PFPSyntax.string( separator );
+		fSeparator = separator;
 	}
 
 	public final void setTemplate( final String template ) {
-		fTemplate = PFPSyntax.string( template );
+		fTemplate = template;
 	}
 
 	public final void appendTo( final PipeFileParser parser ) {
@@ -144,6 +146,9 @@ public final class Transform extends AbstractContainer {
 							fLogTemplate,
 							fTemplateParameters
 					)::t;
+			break;
+		case insertColumns:
+			transform = LineTransforms.insertColumns( fTargetColumn, fCount )::t;
 			break;
 		default:
 			throw new Error( "Invalid type - " + fType );
@@ -230,11 +235,15 @@ public final class Transform extends AbstractContainer {
 	}
 
 	public final void setLogTemplate( final String template ) {
-		fLogTemplate = PFPSyntax.string( template );
+		fLogTemplate = template;
 	}
 
 	public final void setLogLevel( final int logLevel ) {
 		fLogLevel = logLevel;
+	}
+
+	public final void setCount( final int count ) {
+		fCount = count;
 	}
 
 }

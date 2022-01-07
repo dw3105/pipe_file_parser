@@ -25,4 +25,11 @@ rem call grun PFPSyntax pfp_program -gui test23.pfp
 rem call grun PFPSyntax pfp_program -gui test24.pfp
 rem call grun PFPSyntax pfp_program -gui test25.pfp
 rem call grun PFPSyntax pfp_program -gui test26.pfp
-call grun PFPSyntax pfp_program -gui test27.pfp
+rem call grun PFPSyntax pfp_program -gui test27.pfp
+rem call grun PFPSyntax pfp_program -gui test28.pfp
+rem call grun PFPSyntax pfp_program -gui test29.pfp
+rem call grun PFPSyntax pfp_program -gui test30.pfp
+rem call grun PFPSyntax pfp_program -gui test31.pfp
+rem call grun PFPSyntax pfp_program -gui test32.pfp
+rem call grun PFPSyntax pfp_program -gui test33.pfp
+call grun PFPSyntax pfp_program -gui test34.pfp

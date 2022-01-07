@@ -1,0 +1,1 @@
+log( stderr, info ) f = 'PFPSyntaxLexer.java' 'list.txt'.( TERM = #0, FIRST_LINE = head( f.+contains( TERM ), 1 ) )

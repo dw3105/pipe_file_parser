@@ -1,0 +1,29 @@
+log( stdout, warning ) 
+ssnh='ssnh.csv.dat'.split( ',' ).columns( 2, 3 ).unique 
+prod='prod.csv.dat'.split( ',' ).columns( 6, 7, 15 ).unique 
+loc='loc.csv.dat'.split( ',' ).columns( 0, 1, 7 ).unique 
+'SCWSClusterLl.out'
+.split( ',' )
+.(
+SSN_ID=#0,
+PLVL_ID=#1,
+STR_ID=#2,
+SSN_LBL=lookup( ssnh, SSN_ID, 1 ),
+PLVL_LBL=lookup( prod, PLVL_ID, 1 ),
+CNCP_LBL=lookup( prod, PLVL_ID, 2 ),
+STR_LBL=lookup( loc, STR_ID, 1 ),
+TERT_LBL=lookup( loc, STR_ID, 2 )
+)
+.template(
+	0,
+	'#0,#1,#2,#3,#4,#5,#6',
+	SSN_LBL,
+	PLVL_LBL,
+	STR_LBL,
+	TERT_LBL,
+	CNCP_LBL,
+	3,
+	2
+)
+.merge( ',' ) 
+-> 'report_1_1.csv'

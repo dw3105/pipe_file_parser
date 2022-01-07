@@ -10,6 +10,7 @@ import blog.javamagic.pfp.source.Sources;
 public final class Input extends AbstractContainer {
 
 	public enum Type {
+		csv,
 		file,
 		files,
 		fileNames,
@@ -17,7 +18,9 @@ public final class Input extends AbstractContainer {
 		parser,
 		head,
 		tail,
-		dictionary
+		dictionary,
+		countLines,
+		dictLookup
 	}
 
 	private Type fType;
@@ -26,6 +29,10 @@ public final class Input extends AbstractContainer {
 	private Parser fParser;
 	private int fLinesCount = 10;
 	private String fVariable;
+	private String fDictionaryName;
+	private String fLookupString;
+	private String fLookupVariable;
+	private int fLookupColumn;
 	
 	public Input() {
 		fMasks = new ArrayList<>();
@@ -50,6 +57,9 @@ public final class Input extends AbstractContainer {
 	public final Source source() {
 		final Source source;
 		switch ( fType ) {
+		case csv:
+			source = Sources.fromCsv( fFilename );
+			break;
 		case file:
 			source = Sources.fromFile( fFilename );
 			break;
@@ -76,8 +86,20 @@ public final class Input extends AbstractContainer {
 		case tail:
 			source = Sources.tail( fParser.pipeFileParser(), fLinesCount );
 			break;
+		case countLines:
+			source = Sources.countLines( fParser.pipeFileParser() );
+			break;
 		case dictionary:
 			source = Dictionaries.get( fVariable );
+			break;
+		case dictLookup:
+			source =
+					Sources.dictLookup(
+							fDictionaryName,
+							fLookupString,
+							fLookupVariable,
+							fLookupColumn
+					);
 			break;
 		default:
 			throw new Error( "Invalid type - " + fType );
@@ -95,6 +117,22 @@ public final class Input extends AbstractContainer {
 
 	public final void setVariable( final String variable ) {
 		fVariable = variable;
+	}
+
+	public final void setDictionaryName( final String dictionaryName ) {
+		fDictionaryName = dictionaryName;
+	}
+
+	public final void setLookupString( final String lookupString ) {
+		fLookupString = lookupString;
+	}
+
+	public final void setLookupVariable( final String lookupVariable ) {
+		fLookupVariable = lookupVariable;
+	}
+
+	public final void setLookupColumn( final int lookupColumn ) {
+		fLookupColumn = lookupColumn;
 	}
 
 }

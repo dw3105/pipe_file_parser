@@ -5,14 +5,15 @@ import blog.javamagic.pfp.parser.PipeFileParser;
 public final class Output extends AbstractContainer {
 
 	public enum Type {
+		csv,
 		file,
-		stdout,
-		countLines		
+		stdout
 	}
 
 	private Type fType;
 	private String fFilename;
 	private String fSeparator = "";
+	private boolean fAppend = false;
 
 	public final void setType( final Type type ) {
 		fType = type;
@@ -23,16 +24,21 @@ public final class Output extends AbstractContainer {
 	}
 
 	public final void setSeparator( final String separator ) {
-		fSeparator = PFPSyntax.string( separator );
+		fSeparator = separator;
 	}
 
 	public final void output( final PipeFileParser parser ) {
 		switch ( fType ) {
-		case countLines:
-			parser.countLines();
+		case csv:
+			parser.toCsv( fFilename );
 			break;
 		case file:
-			parser.toFile( fFilename, fSeparator );
+			if ( fAppend ) {
+				parser.appendFile( fFilename, fSeparator );
+			}
+			else {
+				parser.toFile( fFilename, fSeparator );
+			}
 			break;
 		case stdout:
 			parser.output();
@@ -49,8 +55,8 @@ public final class Output extends AbstractContainer {
 	public final boolean usesStdout() {
 		final boolean stdout;
 		switch ( fType ) {
-		case countLines:
-			stdout = true;
+		case csv:
+			stdout = false;
 			break;
 		case file:
 			stdout = false;
@@ -62,6 +68,10 @@ public final class Output extends AbstractContainer {
 			throw new Error( "Invalid type - " + fType );
 		}
 		return stdout;
+	}
+
+	public final void append( final boolean append ) {
+		fAppend  = append;
 	}
 	
 }

@@ -9,11 +9,12 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import blog.javamagic.pfp.PFP;
-import blog.javamagic.pfp.antlr.generated.PFPSyntaxBaseListener;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParserBaseListener;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_begins_withContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_class_nameContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_commandContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_containsContext;
+import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_dict_lookupContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_dictionaryContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_ends_withContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_filterContext;
@@ -41,7 +42,7 @@ import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_var_defContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_var_defsContext;
 import blog.javamagic.pfp.antlr.generated.PFPSyntaxParser.Pfp_write_to_logContext;
 
-public final class PFPListener extends PFPSyntaxBaseListener {
+public final class PFPListener extends PFPSyntaxParserBaseListener {
 
 	private Program fProgram;
 	private PFPContainer fCurrentContainer;
@@ -199,6 +200,10 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 		if ( ctx.pfp_output() != null ) {
 			command.setOutput( ctx.pfp_output().result );
 		}
+		if ( ctx.pfp_header() != null ) {
+			final String header = ctx.pfp_header().STRING().getText();
+			command.setHeader( header );
+		}
 	}
 
 	@Override
@@ -209,8 +214,15 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 			output.setType( Output.Type.file );
 			output.setFilename( ctx.pfp_short_file().STRING().getText() );
 		}
-		if ( ctx.FILE() != null ) {
+		if ( ctx.CSV() != null ) {
+			output.setType( Output.Type.csv );
+			output.setFilename( ctx.STRING( 0 ).getText() );
+		}
+		if ( ( ctx.FILE() != null ) || ( ctx.APPEND() != null ) ) {
 			output.setType( Output.Type.file );
+			if ( ctx.APPEND() != null ) {
+				output.append( true );
+			}
 			output.setFilename( ctx.STRING( 0 ).getText() );
 			if ( ctx.STRING().size() == 2 ) {
 				output.setSeparator( ctx.STRING( 1 ).getText() );
@@ -218,9 +230,6 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 		}
 		if ( ctx.STDOUT() != null ) {
 			output.setType( Output.Type.stdout );
-		}
-		if ( ctx.COUNT_LINES() != null ) {
-			output.setType( Output.Type.countLines );
 		}
 	}
 
@@ -273,6 +282,10 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 			input.setType( Input.Type.files );
 			input.addFilemask( ctx.pfp_short_file().STRING().getText() );
 		}
+		if ( ctx.CSV() != null ) {
+			input.setType( Input.Type.csv );
+			input.setFilename( ctx.STRING( 0 ).getText() );
+		}
 		if ( ctx.FILE() != null ) {
 			input.setType( Input.Type.file );
 			input.setFilename( ctx.STRING( 0 ).getText() );
@@ -313,6 +326,23 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 				input.setLinesCount( Integer.parseInt( ctx.INT().getText() ) );
 			}
 		}
+		if ( ctx.COUNT_LINES() != null ) {
+			input.setType( Input.Type.countLines );
+			input.setParser( ctx.pfp_parser().result );
+		}
+		if ( ctx.pfp_dict_lookup() != null ) {
+			input.setType( Input.Type.dictLookup );
+			final Pfp_dict_lookupContext lookup = ctx.pfp_dict_lookup();
+			input.setDictionaryName( lookup.VAR().getText() );
+			final Pfp_string_or_varContext str_or_var = lookup.pfp_string_or_var();
+			if ( str_or_var.STRING() != null ) {
+				input.setLookupString( str_or_var.STRING().getText() );
+			}
+			if ( str_or_var.VAR() != null ) {
+				input.setLookupVariable( str_or_var.VAR().getText() );
+			}
+			input.setLookupColumn( Integer.parseInt( lookup.INT().getText() ) );
+		}
 		if ( ctx.VAR() != null ) {
 			input.setType( Input.Type.dictionary );
 			input.setVariable( ctx.VAR().getText() );
@@ -339,6 +369,9 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 		fCurrentContainer = predicate.parent();
 		if ( ctx.pfp_predicate() != null ) {
 			ctx.result = ctx.pfp_predicate().result;
+		}
+		if ( ctx.EMPTY() != null ) {
+			predicate.setType( Predicate.Type.empty );
 		}
 		if ( ctx.pfp_string_comp() != null ) {
 			predicate.setType( Predicate.Type.string_comparison );
@@ -571,6 +604,11 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 				}
 			}
 		}
+		if ( ctx.INSERT_COLUMNS() != null ) {
+			transform.setType( Transform.Type.insertColumns );
+			transform.setTargetColumn( Integer.parseInt( ctx.INT( 0 ).getText() ) );
+			transform.setCount( Integer.parseInt( ctx.INT( 1 ).getText() ) );
+		}
 	}
 	
 	private final static class ColumnsParameter {
@@ -720,7 +758,6 @@ public final class PFPListener extends PFPSyntaxBaseListener {
 	public void exitPfp_if_branch( Pfp_if_branchContext ctx ) {
 		final IfBranch if_branch = ctx.result;
 		fCurrentContainer = if_branch.parent();
-		// TODO Auto-generated method stub
 	}
 
 	@Override

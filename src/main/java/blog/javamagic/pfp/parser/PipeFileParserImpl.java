@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.opencsv.CSVWriter;
+
 import blog.javamagic.pfp.PFP;
 import blog.javamagic.pfp.antlr.VarDefinitions;
 import blog.javamagic.pfp.logger.Logger;
@@ -75,6 +77,7 @@ final class PipeFileParserImpl implements PipeFileParser {
 	
 	private boolean fUnique = false;
 	private boolean fStopped = false;
+	private String fHeader;
 
 	public PipeFileParserImpl( final Source source ) {
 		fSource = source;
@@ -334,12 +337,63 @@ final class PipeFileParserImpl implements PipeFileParser {
 								new FileWriter( new File( outputFile ), append )
 						)
 		) {
+			if ( fHeader != null ) {
+				writeLine( writer, new String[] { fHeader }, "" );
+			}
 			final String sep = ( separator != null ? separator : "" );
 			parse( ( line ) -> writeLine( writer, line, sep ) );
 		}
 		catch ( Throwable e ) {
 			throw new RuntimeException( e );
 		}
+	}
+
+	@SuppressWarnings( "deprecation" )
+	@Override
+	public void toCsv( final String outputFile ) {
+		Logger.log(
+				PFP.LOG_LEVEL_INFO,
+				() -> "Writing output to CSV %1$s",
+				() -> new Object[] { outputFile }
+		);
+		try (
+				final CSVWriter writer =
+						new CSVWriter(
+								new BufferedWriter(
+										new FileWriter( new File( outputFile ) )
+								),
+								',',
+								'\0',
+								'\0'
+						)
+		) {
+			if ( fHeader != null ) {
+				writer.writeNext( new String[] { fHeader } );
+			}
+			parse( ( line ) -> writer.writeNext( addQuotes( line ) ) );
+		}
+		catch ( Throwable e ) {
+			throw new RuntimeException( e );
+		}
+	}
+
+	private final String[] addQuotes( final String[] line ) {
+		final List<String> quoted = new ArrayList<>();
+		for ( final String col : line ) {
+			final String quoted_col;
+			if ( col.contains( "\"" ) || col.contains( "," ) ) {
+				quoted_col = new StringBuilder( "\"" )
+						.append( col.replaceAll( "\"", "\"\"" ) )
+						.append( "\"" )
+						.toString();
+			}
+			else {
+				quoted_col = col;
+			}
+			quoted.add( quoted_col );
+//			System.out.println( col + " -> " + quoted_col );
+		}
+		return quoted.toArray( new String[quoted.size()] );
 	}
 
 	@Override
@@ -386,14 +440,10 @@ final class PipeFileParserImpl implements PipeFileParser {
 	}
 
 	@Override
-	public final void countLines() {
-		final AtomicInteger counter = new AtomicInteger( 0 );
-		parse( ( line ) -> counter.incrementAndGet() );
-		System.out.println( counter.get() );
-	}
-
-	@Override
 	public final void output( final String separator ) {
+		if ( fHeader != null ) {
+			System.out.println( fHeader );
+		}
 		parse(
 				( line ) -> {
 					final int len = line.length;
@@ -419,6 +469,11 @@ final class PipeFileParserImpl implements PipeFileParser {
 	@Override
 	public final void stop() {
 		fStopped = true;
+	}
+
+	@Override
+	public void setHeader( String header ) {
+		fHeader = header;
 	}
 
 }

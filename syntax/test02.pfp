@@ -1,1 +1,1 @@
-file( '${plmFile}.tmp' ) -> countLines
+countLines( file( '${plmFile}.tmp' ) )

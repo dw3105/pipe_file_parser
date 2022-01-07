@@ -62,7 +62,7 @@ public final class LineFilters {
 		}
 	}
 
-	public final static LineFilter StringEqual(
+	public final static LineFilter stringEqual(
 			final String leftString,
 			final String leftVariable,
 			final String rightString,
@@ -76,7 +76,7 @@ public final class LineFilters {
 		);
 	}
 
-	public final static LineFilter StringNotEqual(
+	public final static LineFilter stringNotEqual(
 			final String leftString,
 			final String leftVariable,
 			final String rightString,
@@ -119,6 +119,10 @@ public final class LineFilters {
 			final int column
 	) {
 		return new EndsWith( stringParameters, variableParameters, column );
+	}
+
+	public final static LineFilter empty() {
+		return new Empty();
 	}
 
 }

@@ -8,6 +8,10 @@ public final class Sources {
 		return new FileSource( filename );
 	}
 
+	public final static Source fromCsv( final String filename ) {
+		return new CsvSource( filename );
+	}
+
 	public final static Source fromPipe( final PipeFileParser parser ) {
 		return new PipeSource( parser );
 	}
@@ -40,6 +44,24 @@ public final class Sources {
 			final int linesCount
 	) {
 		return new TailSource( parser, linesCount );
+	}
+
+	public final static Source countLines( final PipeFileParser parser ) {
+		return new CountLinesSource( parser );
+	}
+
+	public final static Source dictLookup(
+			final String dictionaryName,
+			final String lookupString,
+			final String lookupVariable,
+			final int lookupColumn
+	) {
+		return new DictLookup(
+				dictionaryName,
+				lookupString,
+				lookupVariable,
+				lookupColumn
+		);
 	}
 
 }

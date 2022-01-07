@@ -1,5 +1,6 @@
 package blog.javamagic.pfp.source;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,12 +27,12 @@ final class FileConcatenator extends AbstractSource {
 
 	@Override
 	public final void forEachLine( final Consumer<String[]> consumer ) {
-		final List<String> files_list = new ArrayList<>();
+		final List<File> files_list = new ArrayList<>();
 		for ( final String mask : fFileMasks ) {
 			WildcardMatcher.match( mask, files_list::add );
 		}
 		files_list.forEach(
-				( file ) -> new FileSource( file ).forEachLine(
+				( file ) -> new FileSource( file.getName() ).forEachLine(
 						( line ) -> {
 							if ( stopped() ) {
 								return;

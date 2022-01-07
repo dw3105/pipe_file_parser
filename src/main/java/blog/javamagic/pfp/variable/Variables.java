@@ -59,7 +59,7 @@ public final class Variables {
 		fVariables.put( name, new Variable( str ) );
 		Logger.log(
 				PFP.LOG_LEVEL_DEBUG,
-				() -> "%1$s = #%2$s",
+				() -> "%1$s = %2$s",
 				() -> new Object[] { name, str }
 		);
 	}

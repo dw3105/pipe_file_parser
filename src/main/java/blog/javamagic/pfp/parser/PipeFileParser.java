@@ -20,6 +20,7 @@ public interface PipeFileParser {
 	
 	public void toFile( String outputFile, String separator );
 	public void toFile( String outputFile );
+	public void toCsv( String outputFile );
 	
 	public void appendFile( String outputFile );
 	public void appendFile( String outputFile, String separator );
@@ -27,8 +28,7 @@ public interface PipeFileParser {
 	public void output( String separator );
 	public void output();
 	
-	public void countLines();
-	
 	public void stop();
+	public void setHeader( String header );
 	
 }

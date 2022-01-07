@@ -17,7 +17,8 @@ public final class Predicate extends AbstractContainer {
 		string_comparison,
 		lookup,
 		beginsWith,
-		endsWith		
+		endsWith,
+		empty		
 	}
 	
 	public enum Comparison {
@@ -56,10 +57,13 @@ public final class Predicate extends AbstractContainer {
 	public final java.util.function.Predicate<String[]> predicate() {
 		final java.util.function.Predicate<String[]> predicate;
 		switch ( fType ) {
+		case empty:
+			predicate = LineFilters.empty()::f;
+			break;
 		case string_comparison:
 			switch ( fComparison ) {
 			case equals:
-				predicate = LineFilters.StringEqual(
+				predicate = LineFilters.stringEqual(
 						fLeftString,
 						fLeftVariable,
 						fRightString,
@@ -67,7 +71,7 @@ public final class Predicate extends AbstractContainer {
 				)::f;
 				break;
 			case not_equals:
-				predicate = LineFilters.StringNotEqual(
+				predicate = LineFilters.stringNotEqual(
 						fLeftString,
 						fLeftVariable,
 						fRightString,
@@ -167,7 +171,7 @@ public final class Predicate extends AbstractContainer {
 	}
 
 	public final void setLeftString( final String str ) {
-		fLeftString = PFPSyntax.string( str );
+		fLeftString = str;
 	}
 
 	public final void setLeftVariable( final String name ) {
@@ -175,7 +179,7 @@ public final class Predicate extends AbstractContainer {
 	}
 
 	public final void setRightString( final String str ) {
-		fRightString = PFPSyntax.string( str );
+		fRightString = str;
 	}
 
 	public final void setRightVariable( final String name ) {
@@ -191,7 +195,7 @@ public final class Predicate extends AbstractContainer {
 	}
 
 	public final void addStringParam( final String str ) {
-		fStringParameters.add( PFPSyntax.string( str ) );
+		fStringParameters.add( str );
 	}
 
 	public final void addVariableParam( final String variable ) {

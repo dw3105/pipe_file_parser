@@ -1,0 +1,21 @@
+
+log( 'rollup_master.log', info )
+exportedprodhier = '${exportedprodhier}'
+plvls = '${tempPlmFile}'.split( ',' ).columns( 2 ).unique
+plvls
+.(
+	PLVL = #0,
+	PLVL_CM = template( ',#0,', PLVL ),
+	ROLLUP_CT = countLines( head( exportedprodhier.+contains( PLVL_CM ).+contains( ',OTHER_OTHER,' ), 1 ) )
+)
+.if(
+	ROLLUP_CT == '1',
+	(
+		ROLLUP = head( exportedprodhier.+contains( PLVL_CM ).+contains( ',OTHER_OTHER,' ), 1 ).split( ',' ).columns( 2-39 ).merge( ',' )
+	),
+	(
+		ROLLUP = head( exportedprodhier.+contains( PLVL_CM ), 1 ).split( ',' ).columns( 2-39 ).merge( ',' )
+	).warning( 'Warn: No Other Support Entry found for PLVL: #0', PLVL )
+)
+.template( 0, '#0,#1', PLVL, ROLLUP ) ->
+'${rollupmaster}'

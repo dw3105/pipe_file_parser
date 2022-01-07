@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import blog.javamagic.pfp.PFP;
 import blog.javamagic.pfp.parser.PipeFileParser;
 import blog.javamagic.pfp.transform.LineTransforms;
 import blog.javamagic.pfp.variable.Variables;
@@ -17,7 +18,7 @@ public final class VarDefinitions extends AbstractContainer {
 
 		public Parameter( final String string, final String variable ) {
 			if ( string != null ) {
-				this.string = PFPSyntax.string( string );
+				this.string = string;
 			}
 			else {
 				this.string = null;
@@ -108,7 +109,7 @@ public final class VarDefinitions extends AbstractContainer {
 	}
 
 	public final void addVar( final String name, final String stringValue ) {
-		fVars.add( new VarDefinition( name, PFPSyntax.string( stringValue ) ) );
+		fVars.add( new VarDefinition( name, stringValue ) );
 	}
 
 	public final void addVar( final String name, final Parser parser ) {
@@ -129,6 +130,7 @@ public final class VarDefinitions extends AbstractContainer {
 				Variables.set( name, var_def.stringValue );
 			}
 			if ( var_def.parser != null ) {
+				final String[] cur_line = PFP.currentLine();
 				final PipeFileParser parser = var_def.parser.pipeFileParser();
 				final StringBuilder sb = new StringBuilder();
 				final AtomicInteger counter = new AtomicInteger( 0 );
@@ -148,6 +150,7 @@ public final class VarDefinitions extends AbstractContainer {
 				);
 				final String value = sb.toString();
 				Variables.set( name, value );
+				PFP.setCurrentLine( cur_line );
 			}
 			if ( var_def.column != null ) {
 				Variables.setColumn( name, var_def.column );
@@ -183,13 +186,7 @@ public final class VarDefinitions extends AbstractContainer {
 			final String template,
 			final List<Parameter> parameters
 	) {
-		fVars.add(
-				new VarDefinition(
-						name,
-						PFPSyntax.string( template ),
-						parameters
-				)
-		);
+		fVars.add( new VarDefinition( name, template, parameters ) );
 	}
 
 }

@@ -4,12 +4,14 @@
  * This generated file contains a sample Java Library project to get you started.
  * For more details take a look at the Java Libraries chapter in the Gradle
  * user guide available at https://docs.gradle.org/4.7/userguide/java_library_plugin.html
- */
+ */ 
 
 plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
     id 'eclipse'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+	id 'java'
 }
 
 eclipse {
@@ -23,20 +25,13 @@ targetCompatibility = 1.8
 
 dependencies {
 	// https://mvnrepository.com/artifact/org.antlr/antlr4-runtime
-	compile group: 'org.antlr', name: 'antlr4-runtime', version: '4.7.1'
+	implementation group: 'org.antlr', name: 'antlr4-runtime', version: '4.7.1'
+
+	// https://mvnrepository.com/artifact/com.opencsv/opencsv
+	implementation group: 'com.opencsv', name: 'opencsv', version: '4.0'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
-}
-
-task myJar(type: Jar) {
-    manifest {
-        attributes 'Main-Class': 'blog.javamagic.pfp.PfpRunner'
-    }
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-	from sourceSets.main.output
-	exclude '/*.class'
-    with jar
 }
 
 // In this section you declare where to find the dependencies of your project

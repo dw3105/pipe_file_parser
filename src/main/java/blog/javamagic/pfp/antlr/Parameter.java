@@ -24,7 +24,7 @@ public final class Parameter extends AbstractContainer {
 	}
 
 	public final void setString( final String value ) {
-		fStringValue = PFPSyntax.string( value );
+		fStringValue = value;
 	}
 
 	public final void setBoolean( final boolean bool ) {

@@ -133,4 +133,11 @@ public final class LineTransforms {
 		return new WriteToLog( logLevel, template, templateParameters );
 	}
 
+	public final static LineTransform insertColumns(
+			final int position,
+			final int count
+	) {
+		return new InsertColumns( position, count );
+	}
+
 }

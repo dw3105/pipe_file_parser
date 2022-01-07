@@ -1,0 +1,3 @@
+log( stdout, info )
+		file( '${DEL_FILE}' ).replace( '"' ).unique ->
+		append( '${delPHList}.tmp' )
